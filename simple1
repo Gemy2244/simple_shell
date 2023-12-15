@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define MAX_LINE 128
+
+int main(int argc, char *argv[]) {
+  char line[MAX_LINE];
+  int ret;
+
+  // Display prompt
+  printf("> ");
+
+  while (fgets(line, sizeof(line), stdin)) {
+    // Remove trailing newline
+    strtok(line, "\n");
+
+    // Check for end of file
+    if (feof(stdin)) {
+      printf("\n");
+      break;
+    }
+
+    // Fork a child process
+    ret = fork();
+    if (ret == -1) {
+      perror("fork");
+      exit(1);
+    }
+
+    if (ret == 0) {
+      // Child process
+      execlp(line, line, NULL);
+      perror("execlp");
+      exit(127);
+    } else {
+      // Parent process
+      wait(NULL);
+    }
+
+    // Display prompt again
+    printf("> ");
+  }
+
+  return 0;
+}
